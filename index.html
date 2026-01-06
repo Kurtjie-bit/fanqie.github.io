@@ -89,11 +89,11 @@
 </head>
 <body>
     <div class="boost-box">
-        <h2 class="boost-title">番茄拼多多助力工具</h2>
-        <input type="text" class="link-input" placeholder="请输入助力链接" id="inputLink">
-        <button class="boost-button" id="boostBtn">一键助力</button>
+        <h2 class="boost-title">打你网站就受着</h2>
+        <input type="text" class="link-input" placeholder="打你网站就受着" id="inputLink">
+        <button class="boost-button" id="boostBtn">打你网站就受着>da>dan>d
     </div>
-    <div class="tip-box" id="tipBox">助力成功！</div>
+    <div class="tip-box" id="tipBox">打你网站就受着</div>
 
     <script>
         const boostBtn = document.getElementById('boostBtn');
@@ -102,22 +102,22 @@
 
         boostBtn.addEventListener('click', function() {
             if (inputLink.value.trim() === '') {
-                tipBox.textContent = '请输入助力口令！';
+                tipBox.textContent = '打你网站就受着';
                 tipBox.classList.add('show');
                 setTimeout(() => tipBox.classList.remove('show'), 1500);
                 return;
             }
 
             this.disabled = true;
-            this.textContent = '助力中...';
+            this.textContent = '打你网站就受着';
 
             setTimeout(() => {
-                tipBox.textContent = '助力成功！';
+                tipBox.textContent = '打你网站就受着';
                 tipBox.classList.add('show');
                 setTimeout(() => {
                     tipBox.classList.remove('show');
                     this.disabled = false;
-                    this.textContent = '一键助力';
+                    this.textContent = '打你网站就受着';
                     inputLink.value = '';
                 }, 1500);
             }, 800);
