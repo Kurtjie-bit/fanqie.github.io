@@ -2,15 +2,14 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>拼多多助力器</title>
+    <title>车牌归属地查询</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "微软雅黑", "Microsoft YaHei", "宋体", SimSun, sans-serif;
+            font-family: "Microsoft Yahei", sans-serif;
         }
         body {
             background-color: #f5f5f5;
@@ -19,108 +18,114 @@
             align-items: center;
             min-height: 100vh;
         }
-        .boost-box {
-            width: 350px;
+        .container {
+            background: #fff;
             padding: 30px;
-            background-color: #fff;
-            border-radius: 12px;
-            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
-            text-align: center;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 400px;
         }
-        .boost-title {
+        h1 {
             font-size: 20px;
-            color: #ff4e00;
+            text-align: center;
             margin-bottom: 20px;
-            font-weight: 600;
+            color: #333;
         }
-        .link-input {
-            width: 100%;
-            height: 45px;
-            padding: 0 15px;
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        #carPlate {
+            flex: 1;
+            padding: 10px;
             border: 1px solid #ddd;
-            border-radius: 22px;
-            font-size: 14px;
-            outline: none;
-            margin-bottom: 18px;
-            transition: border-color 0.3s;
+            border-radius: 4px;
+            font-size: 16px;
         }
-        .link-input:focus {
-            border-color: #ff4e00;
-        }
-        .boost-button {
-            width: 100%;
-            height: 45px;
-            background-color: #ff4e00;
+        #queryBtn {
+            padding: 10px 20px;
+            background-color: #007bff;
             color: #fff;
             border: none;
-            border-radius: 22px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 4px;
             cursor: pointer;
-            transition: opacity 0.3s;
+            font-size: 16px;
         }
-        .boost-button:hover {
-            opacity: 0.9;
+        #queryBtn:hover {
+            background-color: #0056b3;
         }
-        .boost-button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-            opacity: 1;
-        }
-        .tip-box {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 15px 25px;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: #fff;
-            border-radius: 8px;
-            font-size: 14px;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
-        }
-        .tip-box.show {
-            opacity: 1;
-            pointer-events: auto;
+        #result {
+            text-align: center;
+            font-size: 18px;
+            color: #555;
+            min-height: 24px;
         }
     </style>
 </head>
 <body>
-    <div class="boost-box">
-        <h2 class="boost-title">打你网站就受着</h2>
-        <input type="text" class="link-input" placeholder="打你网站就受着" id="inputLink">
-        <button class="boost-button" id="boostBtn">打你网站就受着>da>dan>d
+    <div class="container">
+        <h1>车牌归属地查询</h1>
+        <div class="input-group">
+            <input type="text" id="carPlate" placeholder="请输入车牌（如：粤B12345）">
+            <button id="queryBtn">查询</button>
+        </div>
+        <div id="result"></div>
     </div>
-    <div class="tip-box" id="tipBox">打你网站就受着</div>
 
     <script>
-        const boostBtn = document.getElementById('boostBtn');
-        const inputLink = document.getElementById('inputLink');
-        const tipBox = document.getElementById('tipBox');
+        // 车牌省份+城市代码映射表（示例，可自行补充更多）
+        const plateCityMap = {
+            '粤A': '广州市', '粤B': '深圳市', '粤C': '珠海市',
+            '京A': '北京市', '京B': '北京市',
+            '沪A': '上海市', '沪B': '上海市',
+            '渝A': '重庆市', '渝B': '重庆市',
+            '苏A': '南京市', '苏B': '无锡市', '苏C': '徐州市',
+            '浙A': '杭州市', '浙B': '宁波市', '浙C': '温州市'
+        };
+        // 省份汉字映射
+        const plateProvinceMap = {
+            '粤': '广东省', '京': '北京市', '沪': '上海市', '渝': '重庆市',
+            '苏': '江苏省', '浙': '浙江省', '冀': '河北省', '鲁': '山东省'
+        };
 
-        boostBtn.addEventListener('click', function() {
-            if (inputLink.value.trim() === '') {
-                tipBox.textContent = '打你网站就受着';
-                tipBox.classList.add('show');
-                setTimeout(() => tipBox.classList.remove('show'), 1500);
+        const queryBtn = document.getElementById('queryBtn');
+        const carPlate = document.getElementById('carPlate');
+        const result = document.getElementById('result');
+
+        queryBtn.addEventListener('click', function() {
+            const plate = carPlate.value.trim().toUpperCase();
+            if (!plate) {
+                result.textContent = '请输入有效的车牌号码';
+                result.style.color = '#dc3545';
                 return;
             }
+            // 提取前两位（汉字+字母）
+            const platePrefix = plate.substring(0, 2);
+            const provinceCode = plate.charAt(0);
 
-            this.disabled = true;
-            this.textContent = '打你网站就受着';
+            if (plateCityMap[platePrefix]) {
+                const province = plateProvinceMap[provinceCode] || '';
+                result.textContent = `归属地：${province} ${plateCityMap[platePrefix]}`;
+                result.style.color = '#28a745';
+            } else {
+                // 若没有城市数据，只显示省份
+                if(plateProvinceMap[provinceCode]){
+                    result.textContent = `归属地：${plateProvinceMap[provinceCode]}（城市暂未收录）`;
+                    result.style.color = '#28a745';
+                }else{
+                    result.textContent = '暂未查询到该车牌归属地';
+                    result.style.color = '#dc3545';
+                }
+            }
+        });
 
-            setTimeout(() => {
-                tipBox.textContent = '打你网站就受着';
-                tipBox.classList.add('show');
-                setTimeout(() => {
-                    tipBox.classList.remove('show');
-                    this.disabled = false;
-                    this.textContent = '打你网站就受着';
-                    inputLink.value = '';
-                }, 1500);
-            }, 800);
+        // 支持回车键查询
+        carPlate.addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                queryBtn.click();
+            }
         });
     </script>
 </body>
